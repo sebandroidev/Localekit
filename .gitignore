@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Project index (auto-generated, session context)
+PROJECT_INDEX.json
+PROJECT_INDEX.md
+
+# Claude / Serena (AI tooling, local only)
+.claude/
+.serena/
