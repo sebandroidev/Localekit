@@ -6,6 +6,8 @@ LocaleKit is a free, offline-first desktop application that brings the entire in
 
 > **Status:** Pre-MVP · Active Development · Contributions Welcome
 
+If LocaleKit sounds useful to you, consider giving it a ⭐ — it helps the project grow and reach more developers!
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Flutter](https://img.shields.io/badge/Flutter-3.19%2B-02569B?logo=flutter)](https://flutter.dev)
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](#installation)
