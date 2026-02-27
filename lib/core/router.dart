@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:localekit/features/projects/settings_screen.dart';
-import 'package:localekit/features/projects/welcome_screen.dart';
-import 'package:localekit/features/projects/workspace_screen.dart';
+import 'package:localekit/features/projects/screens/settings_screen.dart';
+import 'package:localekit/features/projects/screens/welcome_screen.dart';
+import 'package:localekit/features/projects/screens/workspace_screen.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'router.g.dart';
@@ -13,8 +13,12 @@ abstract final class AppRoutes {
   /// The welcome / landing screen shown on first launch.
   static const String welcome = '/';
 
-  /// The main split-pane workspace.
-  static const String workspace = '/workspace';
+  /// The main split-pane workspace for a specific project.
+  static const String workspace = '/workspace/:projectId';
+
+  /// Builds a concrete workspace path for [projectId].
+  static String workspaceForProject(String projectId) =>
+      '/workspace/$projectId';
 
   /// The settings panel.
   static const String settings = '/settings';
@@ -36,7 +40,11 @@ GoRouter router(Ref ref) => GoRouter(
             GoRoute(
               path: AppRoutes.workspace,
               name: 'workspace',
-              builder: (context, state) => const WorkspaceScreen(),
+              builder: (context, state) {
+                final projectId =
+                    state.pathParameters['projectId'] ?? '';
+                return WorkspaceScreen(projectId: projectId);
+              },
             ),
             GoRoute(
               path: AppRoutes.settings,
@@ -48,7 +56,7 @@ GoRouter router(Ref ref) => GoRouter(
       ],
     );
 
-/// Minimal shell scaffold that will host the tab bar in milestone 1.
+/// Minimal shell that hosts the global menu bar (future milestone).
 class _AppShell extends StatelessWidget {
   const _AppShell({required this.child});
 

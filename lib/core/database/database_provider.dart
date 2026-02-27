@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:localekit/core/database/app_database.dart';
 import 'package:localekit/core/database/daos/projects_dao.dart';
 import 'package:localekit/core/database/daos/strings_dao.dart';
+import 'package:localekit/core/database/daos/translation_memory_dao.dart';
 import 'package:localekit/core/database/daos/translations_dao.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -30,3 +31,8 @@ StringsDao stringsDao(Ref ref) => ref.watch(appDatabaseProvider).stringsDao;
 @Riverpod(keepAlive: true)
 TranslationsDao translationsDao(Ref ref) =>
     ref.watch(appDatabaseProvider).translationsDao;
+
+/// Provides the [TranslationMemoryDao] for the current [AppDatabase].
+@Riverpod(keepAlive: true)
+TranslationMemoryDao translationMemoryDao(Ref ref) =>
+    ref.watch(appDatabaseProvider).translationMemoryDao;

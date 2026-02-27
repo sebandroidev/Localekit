@@ -28,6 +28,11 @@ class StringsDao extends DatabaseAccessor<AppDatabase>
       (select(localeStrings)..where((t) => t.id.equals(id)))
           .getSingleOrNull();
 
+  /// Watches the string with [id], emitting null when it does not exist.
+  Stream<LocaleString?> watchStringById(String id) =>
+      (select(localeStrings)..where((t) => t.id.equals(id)))
+          .watchSingleOrNull();
+
   /// Inserts or replaces a string row.
   Future<int> upsertString(LocaleStringsCompanion entry) =>
       into(localeStrings).insertOnConflictUpdate(entry);
@@ -53,4 +58,20 @@ class StringsDao extends DatabaseAccessor<AppDatabase>
             .write(LocaleStringsCompanion(status: Value(status)));
     return count > 0;
   }
+
+  /// Returns the string at the given [filePath] and [lineNumber] for
+  /// [projectId], or null if not found.
+  Future<LocaleString?> getByProjectAndPath(
+    String projectId,
+    String filePath,
+    int lineNumber,
+  ) =>
+      (select(localeStrings)
+            ..where(
+              (t) =>
+                  t.projectId.equals(projectId) &
+                  t.filePath.equals(filePath) &
+                  t.lineNumber.equals(lineNumber),
+            ))
+          .getSingleOrNull();
 }
