@@ -65,7 +65,15 @@ class DartStringExtractor {
     final dartFiles = _collectDartFiles();
     if (dartFiles.isEmpty) return [];
 
-    final collection = AnalysisContextCollection(includedPaths: [projectRoot]);
+    final AnalysisContextCollection collection;
+    try {
+      collection = AnalysisContextCollection(
+        includedPaths: [projectRoot],
+        sdkPath: _findDartSdkPath(),
+      );
+    } on Exception catch (_) {
+      return [];
+    }
     final results = <ExtractedString>[];
     final usedKeys = <String>{};
 
@@ -119,6 +127,23 @@ class DartStringExtractor {
       all.add(file.path);
     }
     return all;
+  }
+
+  /// Returns the Dart SDK root path, or null if it cannot be located.
+  ///
+  /// Checks the `FLUTTER_ROOT` environment variable first (set by `flutter run`
+  /// and the Flutter toolchain), then falls back to `DART_SDK`.
+  static String? _findDartSdkPath() {
+    final flutterRoot = Platform.environment['FLUTTER_ROOT'];
+    if (flutterRoot != null && flutterRoot.isNotEmpty) {
+      final sdkPath = p.join(flutterRoot, 'bin', 'cache', 'dart-sdk');
+      if (Directory(sdkPath).existsSync()) return sdkPath;
+    }
+    final dartSdk = Platform.environment['DART_SDK'];
+    if (dartSdk != null && dartSdk.isNotEmpty) {
+      if (Directory(dartSdk).existsSync()) return dartSdk;
+    }
+    return null;
   }
 
   /// Minimal glob matcher supporting `**`, `*`, and literal segments.
