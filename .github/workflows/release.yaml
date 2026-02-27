@@ -1,0 +1,104 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-artifacts:
+    name: Build artifact (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux
+            artifact-name: localekit-linux-x64.tar.gz
+            pack-cmd: |
+              cd build/linux/x64/release/bundle
+              tar -czf ../../../../../localekit-linux-x64.tar.gz .
+
+          - os: windows-latest
+            target: windows
+            artifact-name: localekit-windows-x64.zip
+            pack-cmd: |
+              cd build/windows/x64/runner/Release
+              Compress-Archive -Path . -DestinationPath ../../../../../localekit-windows-x64.zip
+
+          - os: macos-latest
+            target: macos
+            artifact-name: localekit-macos-universal.dmg
+            pack-cmd: |
+              brew install create-dmg
+              create-dmg \
+                --volname "LocaleKit" \
+                --window-size 540 380 \
+                --app-drop-link 380 185 \
+                localekit-macos-universal.dmg \
+                "build/macos/Build/Products/Release/localekit.app"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run code generation
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build ${{ matrix.target }}
+        run: flutter build ${{ matrix.target }} --release
+
+      - name: Package artifact
+        run: ${{ matrix.pack-cmd }}
+        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: ${{ matrix.artifact-name }}
+          retention-days: 7
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: build-artifacts
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '[:space:]')
+          echo "version=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: LocaleKit ${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.version, '-') }}
+          files: |
+            artifacts/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
