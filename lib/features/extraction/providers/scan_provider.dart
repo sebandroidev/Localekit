@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:localekit/core/database/app_database.dart';
 import 'package:localekit/core/database/database_provider.dart';
@@ -12,7 +12,7 @@ part 'scan_provider.freezed.dart';
 part 'scan_provider.g.dart';
 
 /// The lifecycle states of a project scan.
-@freezed
+@Freezed(toJson: false, fromJson: false)
 sealed class ScanState with _$ScanState {
   const factory ScanState.idle() = ScanIdle;
 
